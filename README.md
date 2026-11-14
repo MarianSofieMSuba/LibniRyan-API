@@ -2,8 +2,8 @@
 ## Group 5
 
 ### Members:
-Mercado, Luis
-Mohammad, Harry
-Ocampo, Cassey
-Quiambao, Justin
-Suba, Marian Sofie
+Mercado, Luis\
+Mohammad, Harry\
+Ocampo, Cassey\
+Quiambao, Justin\
+Suba, Marian Sofie\
