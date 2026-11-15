@@ -34,6 +34,23 @@ def get_books():
         "data": book_list
     }), 200
 
+       # ==========================================
+# MOHAMMAD: GET /api/books/{id}
+# ==========================================
+@libniryan.route('/api/books/<int:book_id>', methods=['GET'])
+def get_book_by_id(book_id):
+    book = books.get(book_id)
+    if not book:
+        return jsonify({
+            "status": "error",
+            "message": "Book not found."
+        }), 404
+
+    return jsonify({
+        "status": "success",
+        "data": book
+    }), 200
+
 # MERCADO: POST /api/books
 @libniryan.route('/api/books', methods=['POST'])
 def add_book():
