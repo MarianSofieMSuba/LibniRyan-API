@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request
+from datetime import date, timedelta
 
 libniryan = Flask(__name__)
 
@@ -74,6 +75,76 @@ def add_book():
         "message": "Book successfully added.",
         "data": new_book
     }), 201
+
+    
+# QUIAMBAO: POST /api/borrow
+
+@libniryan.route('/api/borrow', methods=['POST'])
+def borrow_book():
+    data = request.get_json(silent=True)
+
+    # Validate JSON request
+    if not isinstance(data, dict):
+        return jsonify({
+            "status": "error",
+            "message": "Invalid JSON request."
+        }), 400
+
+    student_id = data.get("student_id")
+    book_id = data.get("book_id")
+
+    # Validate required information
+    if student_id is None or type(book_id) is not int:
+        return jsonify({
+            "status": "error",
+            "message": "Student ID and valid Book ID are required."
+        }), 400
+
+    # Check if book exists
+    book = books.get(book_id)
+
+    if not book:
+        return jsonify({
+            "status": "error",
+            "message": "Book not found."
+        }), 404
+
+    # Check book availability
+    if book["available"] <= 0:
+        return jsonify({
+            "status": "error",
+            "message": "No available copies of this book."
+        }), 400
+
+    # Generate transaction ID
+    transaction_id = max(transactions.keys(), default=0) + 1
+
+    # Set borrowing and due dates
+    borrow_date = date.today()
+    due_date = borrow_date + timedelta(days=14)
+
+    # Create transaction
+    new_transaction = {
+        "transaction_id": transaction_id,
+        "student_id": student_id,
+        "book_id": book_id,
+        "borrow_date": borrow_date.isoformat(),
+        "due_date": due_date.isoformat(),
+        "status": "borrowed"
+    }
+
+    # Update available copies
+    book["available"] -= 1
+
+    # Save transaction
+    transactions[transaction_id] = new_transaction
+
+    return jsonify({
+        "status": "success",
+        "message": "Book successfully borrowed.",
+        "data": new_transaction
+    }), 201
+
 
 # SUBA: PUT /api/return/{transaction_id}
 
