@@ -3,31 +3,14 @@ from flask import Flask, jsonify, request
 libniryan = Flask(__name__)
 
 # Complete book inventory (including all books added by the team)
-books = [
-    {
-        "book_id": 1,
-        "title": "Florante at Laura",
-        "author": "Francisco Balagtas",
-        "copies": 3,
-        "available": 3
-    },
-    {
-        "book_id": 2,
-        "title": "The King in Yellow",
-        "author": "Robert W. Chambers",
-        "copies": 1,
-        "available": 1
-    },
-    {
-        "book_id": 3,
-        "title": "House of Leaves",
-        "author": "Mark Z. Danielewski",
-        "copies": 2,
-        "available": 2
-    }
-]
+books = {
+    1: {"book_id": 1, "title": "Florante at Laura", "author": "Francisco Balagtas", "copies": 3, "available": 3},
+    2: {"book_id": 2, "title": "The King in Yellow", "author": "Robert W. Chambers", "copies": 1, "available": 1},
+    3: {"book_id": 3, "title": "House of Leaves", "author": "Mark Z. Danielewski", "copies": 2, "available": 2}
+}
 
-transactions = []
+# for borrowing
+transactions = {}
 
 # ==========================================
 # CASSEY: GET /api/books
@@ -51,41 +34,45 @@ def get_books():
 
 # SUBA: PUT /api/return/{transaction_id}
 
-@libniryan.route('/api/return/<int:transaction_id>', methods=["PUT"])
+@libniryan.route('/api/return/<int:transaction_id>', methods=['PUT'])
 def return_book(transaction_id):
 
     # Finds the transaction
-    for transaction in transactions:
+    transaction = transactions.get(transaction_id)
 
-        if transaction["transaction_id"] == transaction_id:
+    # Checks if transaction exists
+    if not transaction:
+        return jsonify({
+            "status": "error",
+            "message": "Transaction not found."
+        }), 404
 
-            # Checks if the book has already been returned
-            if transaction["status"] == "returned":
-                return jsonify({
-                    "status": "error",
-                    "message": "Book has already been returned."
-                }), 409
+    # Checks if the book has already been returned
+    if transaction["status"] == "returned":
+        return jsonify({
+            "status": "error",
+            "message": "Book already returned."
+        }), 409
 
+    book = books.get(transaction["book_id"])
 
-            # Updates the book availability
-            for book in books:
-                if book["book_id"] == transaction["book_id"]:
+    # If book exsist
+    if not book:
+        return jsonify({
+            "status": "error",
+            "message": "Book not found."
+        }), 404
 
-                    book["available"] += 1
-                    transaction["status"] = "returned"
+    # Updates book availability and status
+    book["available"] += 1
+    transaction["status"] = "returned"
 
-                    return jsonify({
-                        "status": "success",
-                        "message": "Book successfully returned.",
-                        "data": transaction
-                    }), 200
-
-
-    # Transaction not found
+    # Success
     return jsonify({
-        "status": "error",
-        "message": "Transaction not found."
-    }), 404
+        "status": "success",
+        "message": "Book successfully returned.",
+        "data": transaction
+    }), 200
 
 
 if __name__ == '__main__':
