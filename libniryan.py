@@ -31,6 +31,49 @@ def get_books():
         "data": books
     }), 200
 
+# MERCADO: POST /api/books
+
+@libniryan.route('/api/books', methods=['POST'])
+def add_book():
+    data = request.get_json(silent=True)
+
+    #Validate
+    if not isinstance(data, dict):
+        return jsonify({
+            "status": "error",
+            "message": "Invalid JSON request."
+        }), 400
+
+    title = data.get("title")
+    author = data.get("author")
+    copies = data.get("copies")
+
+    if not title or not author or type(copies) is not int or copies <= 0:
+        return jsonify({
+            "status": "error",
+            "message": "Invalid or missing book information."
+        }), 400
+
+    #New Book ID
+    new_id = max(books.keys(), default=0) + 1
+
+    #Create Book
+    new_book = {
+        "book_id": new_id,
+        "title": title,
+        "author": author,
+        "copies": copies,
+        "available": copies
+    }
+
+    #Add Book
+    books[new_id] = new_book
+
+    return jsonify({
+        "status": "success",
+        "message": "Book successfully added.",
+        "data": new_book
+    }), 201
 
 # SUBA: PUT /api/return/{transaction_id}
 
