@@ -13,9 +13,8 @@ books = {
 # for borrowing
 transactions = {}
 
-# ==========================================
-# CASSEY: GET /api/books
-# ==========================================
+
+# CASSEY: GET /api/books 
 @libniryan.route('/api/books', methods=['GET'])
 def get_books():
     # Return 404 Not Found if the catalog is empty
@@ -25,20 +24,22 @@ def get_books():
             "message": "No books found in the library catalog."
         }), 404
 
+    # Convert the dictionary values into a list for clean JSON output
+    book_list = list(books.values())
+
     # Return 200 OK with the full book list
     return jsonify({
         "status": "success",
-        "count": len(books),
-        "data": books
+        "count": len(book_list),
+        "data": book_list
     }), 200
 
 # MERCADO: POST /api/books
-
 @libniryan.route('/api/books', methods=['POST'])
 def add_book():
     data = request.get_json(silent=True)
 
-    #Validate
+    # Validate
     if not isinstance(data, dict):
         return jsonify({
             "status": "error",
@@ -55,10 +56,10 @@ def add_book():
             "message": "Invalid or missing book information."
         }), 400
 
-    #New Book ID
+    # New Book ID
     new_id = max(books.keys(), default=0) + 1
 
-    #Create Book
+    # Create Book
     new_book = {
         "book_id": new_id,
         "title": title,
@@ -67,7 +68,7 @@ def add_book():
         "available": copies
     }
 
-    #Add Book
+    # Add Book
     books[new_id] = new_book
 
     return jsonify({
@@ -76,9 +77,7 @@ def add_book():
         "data": new_book
     }), 201
 
-    
 # QUIAMBAO: POST /api/borrow
-
 @libniryan.route('/api/borrow', methods=['POST'])
 def borrow_book():
     data = request.get_json(silent=True)
@@ -147,10 +146,8 @@ def borrow_book():
 
 
 # SUBA: PUT /api/return/{transaction_id}
-
 @libniryan.route('/api/return/<int:transaction_id>', methods=['PUT'])
 def return_book(transaction_id):
-
     # Finds the transaction
     transaction = transactions.get(transaction_id)
 
@@ -170,7 +167,7 @@ def return_book(transaction_id):
 
     book = books.get(transaction["book_id"])
 
-    # If book exsist
+    # If book exists
     if not book:
         return jsonify({
             "status": "error",
