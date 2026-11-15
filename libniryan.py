@@ -49,5 +49,44 @@ def get_books():
     }), 200
 
 
+# SUBA: PUT /api/return/{transaction_id}
+
+@libniryan.route('/api/return/<int:transaction_id>', methods=["PUT"])
+def return_book(transaction_id):
+
+    # Finds the transaction
+    for transaction in transactions:
+
+        if transaction["transaction_id"] == transaction_id:
+
+            # Checks if the book has already been returned
+            if transaction["status"] == "returned":
+                return jsonify({
+                    "status": "error",
+                    "message": "Book has already been returned."
+                }), 409
+
+
+            # Updates the book availability
+            for book in books:
+                if book["book_id"] == transaction["book_id"]:
+
+                    book["available"] += 1
+                    transaction["status"] = "returned"
+
+                    return jsonify({
+                        "status": "success",
+                        "message": "Book successfully returned.",
+                        "data": transaction
+                    }), 200
+
+
+    # Transaction not found
+    return jsonify({
+        "status": "error",
+        "message": "Transaction not found."
+    }), 404
+
+
 if __name__ == '__main__':
     libniryan.run(host='127.0.0.1', port=5133, debug=True)
