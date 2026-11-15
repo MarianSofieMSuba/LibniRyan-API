@@ -34,7 +34,6 @@ def get_books():
         "data": book_list
     }), 200
 
-
 # MERCADO: POST /api/books
 @libniryan.route('/api/books', methods=['POST'])
 def add_book():
